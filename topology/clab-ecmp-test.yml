@@ -1,0 +1,250 @@
+# Containerlab Topology Definition for ECMP Hash Testing
+# 
+# This topology implements a 4-path ECMP network for testing hash algorithms
+# based on Source IP address only.
+#
+# Reference: https://containerlab.dev/manual/
+# Architecture: ARCHITECTURE.md
+
+name: ecmp-test
+
+topology:
+  # Default node configuration
+  defaults:
+    kind: linux
+    image: frrouting/frr:latest
+    # Wait for FRR daemons to be ready
+    wait-for: 10s
+
+  # Network nodes definition
+  nodes:
+    # Source Network Hosts
+    h1:
+      kind: linux
+      image: alpine:latest
+      cmd: ip addr add 10.0.1.10/24 dev eth0 && ip route add default via 10.0.1.1 && tail -f /dev/null
+      binds:
+        - ./configs/hosts/h1.sh:/etc/init.d/network.sh:ro
+
+    h2:
+      kind: linux
+      image: alpine:latest
+      cmd: ip addr add 10.0.1.11/24 dev eth0 && ip route add default via 10.0.1.1 && tail -f /dev/null
+      binds:
+        - ./configs/hosts/h2.sh:/etc/init.d/network.sh:ro
+
+    h3:
+      kind: linux
+      image: alpine:latest
+      cmd: ip addr add 10.0.1.12/24 dev eth0 && ip route add default via 10.0.1.1 && tail -f /dev/null
+      binds:
+        - ./configs/hosts/h3.sh:/etc/init.d/network.sh:ro
+
+    h4:
+      kind: linux
+      image: alpine:latest
+      cmd: ip addr add 10.0.1.13/24 dev eth0 && ip route add default via 10.0.1.1 && tail -f /dev/null
+      binds:
+        - ./configs/hosts/h4.sh:/etc/init.d/network.sh:ro
+
+    # Edge Router (R1) - Implements ECMP
+    # This router has 4 equal-cost paths to the destination network
+    r1:
+      kind: linux
+      image: frrouting/frr:latest
+      # Bind FRR configuration files
+      binds:
+        - ./configs/frr/r1/frr.conf:/etc/frr/frr.conf:ro
+        - ./configs/frr/r1/daemons:/etc/frr/daemons:ro
+        - ./configs/frr/r1/vtysh.conf:/etc/frr/vtysh.conf:ro
+      # Startup commands to configure interfaces
+      startup-config: |
+        # Configure source network interface
+        ip addr add 10.0.1.1/24 dev eth0
+        ip link set eth0 up
+        
+        # Configure ECMP path 1 interface
+        ip addr add 10.0.2.1/24 dev eth1
+        ip link set eth1 up
+        
+        # Configure ECMP path 2 interface
+        ip addr add 10.0.3.1/24 dev eth2
+        ip link set eth2 up
+        
+        # Configure ECMP path 3 interface
+        ip addr add 10.0.4.1/24 dev eth3
+        ip link set eth3 up
+        
+        # Configure ECMP path 4 interface
+        ip addr add 10.0.5.1/24 dev eth4
+        ip link set eth4 up
+        
+        # Enable IP forwarding
+        sysctl -w net.ipv4.ip_forward=1
+        
+        # Start FRR daemons
+        /usr/lib/frr/frrinit.sh start
+
+    # Core Router 1 (R2) - ECMP Path 1
+    r2:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/frr/r2/frr.conf:/etc/frr/frr.conf:ro
+        - ./configs/frr/r2/daemons:/etc/frr/daemons:ro
+        - ./configs/frr/r2/vtysh.conf:/etc/frr/vtysh.conf:ro
+      startup-config: |
+        # Configure interface to edge router
+        ip addr add 10.0.2.2/24 dev eth0
+        ip link set eth0 up
+        
+        # Configure interface to destination router
+        ip addr add 10.0.6.1/24 dev eth1
+        ip link set eth1 up
+        
+        # Enable IP forwarding
+        sysctl -w net.ipv4.ip_forward=1
+        
+        # Start FRR daemons
+        /usr/lib/frr/frrinit.sh start
+
+    # Core Router 2 (R3) - ECMP Path 2
+    r3:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/frr/r3/frr.conf:/etc/frr/frr.conf:ro
+        - ./configs/frr/r3/daemons:/etc/frr/daemons:ro
+        - ./configs/frr/r3/vtysh.conf:/etc/frr/vtysh.conf:ro
+      startup-config: |
+        # Configure interface to edge router
+        ip addr add 10.0.3.2/24 dev eth0
+        ip link set eth0 up
+        
+        # Configure interface to destination router
+        ip addr add 10.0.7.1/24 dev eth1
+        ip link set eth1 up
+        
+        # Enable IP forwarding
+        sysctl -w net.ipv4.ip_forward=1
+        
+        # Start FRR daemons
+        /usr/lib/frr/frrinit.sh start
+
+    # Core Router 3 (R4) - ECMP Path 3
+    r4:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/frr/r4/frr.conf:/etc/frr/frr.conf:ro
+        - ./configs/frr/r4/daemons:/etc/frr/daemons:ro
+        - ./configs/frr/r4/vtysh.conf:/etc/frr/vtysh.conf:ro
+      startup-config: |
+        # Configure interface to edge router
+        ip addr add 10.0.4.2/24 dev eth0
+        ip link set eth0 up
+        
+        # Configure interface to destination router
+        ip addr add 10.0.8.1/24 dev eth1
+        ip link set eth1 up
+        
+        # Enable IP forwarding
+        sysctl -w net.ipv4.ip_forward=1
+        
+        # Start FRR daemons
+        /usr/lib/frr/frrinit.sh start
+
+    # Core Router 4 (R5) - ECMP Path 4
+    r5:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/frr/r5/frr.conf:/etc/frr/frr.conf:ro
+        - ./configs/frr/r5/daemons:/etc/frr/daemons:ro
+        - ./configs/frr/r5/vtysh.conf:/etc/frr/vtysh.conf:ro
+      startup-config: |
+        # Configure interface to edge router
+        ip addr add 10.0.5.2/24 dev eth0
+        ip link set eth0 up
+        
+        # Configure interface to destination router
+        ip addr add 10.0.9.1/24 dev eth1
+        ip link set eth1 up
+        
+        # Enable IP forwarding
+        sysctl -w net.ipv4.ip_forward=1
+        
+        # Start FRR daemons
+        /usr/lib/frr/frrinit.sh start
+
+    # Destination Router (R6)
+    r6:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/frr/r6/frr.conf:/etc/frr/frr.conf:ro
+        - ./configs/frr/r6/daemons:/etc/frr/daemons:ro
+        - ./configs/frr/r6/vtysh.conf:/etc/frr/vtysh.conf:ro
+      startup-config: |
+        # Configure interface to core router 1
+        ip addr add 10.0.6.2/24 dev eth0
+        ip link set eth0 up
+        
+        # Configure interface to core router 2
+        ip addr add 10.0.7.2/24 dev eth1
+        ip link set eth1 up
+        
+        # Configure interface to core router 3
+        ip addr add 10.0.8.2/24 dev eth2
+        ip link set eth2 up
+        
+        # Configure interface to core router 4
+        ip addr add 10.0.9.2/24 dev eth3
+        ip link set eth3 up
+        
+        # Configure destination network interface
+        ip addr add 192.168.100.1/24 dev eth4
+        ip link set eth4 up
+        
+        # Enable IP forwarding
+        sysctl -w net.ipv4.ip_forward=1
+        
+        # Start FRR daemons
+        /usr/lib/frr/frrinit.sh start
+
+    # Destination Host
+    d1:
+      kind: linux
+      image: alpine:latest
+      cmd: ip addr add 192.168.100.10/24 dev eth0 && ip route add default via 192.168.100.1 && tail -f /dev/null
+      binds:
+        - ./configs/hosts/d1.sh:/etc/init.d/network.sh:ro
+
+  # Links definition - defines the network connections
+  links:
+    # Source network connections
+    - endpoints: ["h1:eth0", "r1:eth0"]
+    - endpoints: ["h2:eth0", "r1:eth0"]
+    - endpoints: ["h3:eth0", "r1:eth0"]
+    - endpoints: ["h4:eth0", "r1:eth0"]
+
+    # ECMP path 1: R1 -> R2
+    - endpoints: ["r1:eth1", "r2:eth0"]
+
+    # ECMP path 2: R1 -> R3
+    - endpoints: ["r1:eth2", "r3:eth0"]
+
+    # ECMP path 3: R1 -> R4
+    - endpoints: ["r1:eth3", "r4:eth0"]
+
+    # ECMP path 4: R1 -> R5
+    - endpoints: ["r1:eth4", "r5:eth0"]
+
+    # Core router to destination router connections
+    - endpoints: ["r2:eth1", "r6:eth0"]
+    - endpoints: ["r3:eth1", "r6:eth1"]
+    - endpoints: ["r4:eth1", "r6:eth2"]
+    - endpoints: ["r5:eth1", "r6:eth3"]
+
+    # Destination network connection
+    - endpoints: ["r6:eth4", "d1:eth0"]

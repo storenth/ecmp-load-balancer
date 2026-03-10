@@ -1,0 +1,198 @@
+# ECMP Testing Framework - Git Ignore File
+#
+# This file specifies intentionally untracked files that Git should ignore.
+# Patterns are matched from the root of the repository.
+
+# ============================================================================
+# Generated Files and Directories
+# ============================================================================
+
+# Test results and analysis outputs
+results/
+results/*/
+
+# Log files
+logs/
+logs/*/
+*.log
+
+# ============================================================================
+# Network Capture Files
+# ============================================================================
+
+# PCAP capture files
+*.pcap
+*.pcapng
+
+# ============================================================================
+# Python Cache Files
+# ============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+.pytest_cache/*/
+
+# ============================================================================
+# IDE and Editor Files
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+auto-save-list
+tramp
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================================================
+# Temporary Files
+# ============================================================================
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================================================
+# Environment and Configuration
+# ============================================================================
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# ============================================================================
+# Allure Test Reports
+# ============================================================================
+
+# Allure results and reports (keep history, ignore generated reports)
+allure-results/
+allure-report/
+
+# ============================================================================
+# Containerlab and Docker
+# ============================================================================
+
+# Containerlab temporary files
+.clab/
+*.clab.yml
+
+# ============================================================================
+# Archive Files
+# ============================================================================
+
+# Test archives
+*.tar.gz
+*.zip
+*.tar
+*.tgz
+
+# ============================================================================
+# Documentation Builds
+# ============================================================================
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# ============================================================================
+# Miscellaneous
+# ============================================================================
+
+# Node modules (if any JavaScript tools are used)
+node_modules/
+
+# Yarn
+yarn-error.log
+yarn-debug.log*
+
+# Package manager lock files (optional - uncomment if needed)
+# package-lock.json
+# yarn.lock

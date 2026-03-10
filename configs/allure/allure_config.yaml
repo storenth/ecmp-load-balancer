@@ -1,0 +1,425 @@
+################################################################################
+# Allure Configuration for ECMP Testing Framework
+#
+# This configuration file defines Allure report settings, test categories,
+# severity levels, and report appearance for ECMP hash testing.
+#
+# References:
+# - Allure documentation: https://docs.qameta.io/allure/
+# - Allure configuration: https://docs.qameta.io/allure/#_configuration
+# - Test categorization: ISO/IEC/IEEE 29119-3 (Software testing documentation)
+#
+# Author: ECMP Testing Framework
+# Version: 1.0.0
+################################################################################
+
+# Allure report configuration
+allure:
+  # Report directory
+  resultsDirectory: results/allure-results
+  reportDirectory: results/allure-report
+  
+  # Report title and description
+  title: "ECMP Hash Testing Framework"
+  description: "Automated testing framework for ECMP hash distribution analysis"
+  
+  # Report language
+  language: "en"
+  
+  # Report timezone
+  timezone: "UTC"
+
+# Test categories configuration
+categories:
+  # Critical tests - must pass for deployment
+  - name: "Critical Tests"
+    matchedStatuses:
+      - failed
+    message: "Critical test failure - ECMP hash distribution is not uniform"
+    
+  # Statistical tests
+  - name: "Statistical Tests"
+    matchedStatuses:
+      - failed
+    message: "Statistical test failure - distribution does not meet criteria"
+    
+  # Performance tests
+  - name: "Performance Tests"
+    matchedStatuses:
+      - failed
+    message: "Performance test failure - packet distribution variance exceeds threshold"
+    
+  # Integration tests
+  - name: "Integration Tests"
+    matchedStatuses:
+      - failed
+    message: "Integration test failure - ECMP path configuration issue"
+    
+  # Regression tests
+  - name: "Regression Tests"
+    matchedStatuses:
+      - failed
+    message: "Regression detected - distribution differs from baseline"
+
+# Severity levels
+severityLevels:
+  - name: "Blocker"
+    value: 1
+    description: "Blocks deployment - ECMP hash algorithm is not working correctly"
+    
+  - name: "Critical"
+    value: 2
+    description: "Critical issue - Distribution variance exceeds acceptable threshold"
+    
+  - name: "Major"
+    value: 3
+    description: "Major issue - Statistical tests indicate non-uniform distribution"
+    
+  - name: "Normal"
+    value: 4
+    description: "Normal issue - Minor distribution imbalance detected"
+    
+  - name: "Minor"
+    value: 5
+    description: "Minor issue - Slight variance from uniform distribution"
+
+# Test suite configuration
+testSuite:
+  name: "ECMP Hash Testing Suite"
+  description: "Comprehensive test suite for ECMP hash distribution validation"
+  
+  # Test suite metadata
+  metadata:
+    framework: "ECMP Testing Framework"
+    version: "1.0.0"
+    author: "ECMP Testing Team"
+    
+  # Test suite parameters
+  parameters:
+    - name: "hash_algorithm"
+      value: "Source IP"
+      description: "ECMP hash algorithm configuration"
+      
+    - name: "num_paths"
+      value: "4"
+      description: "Number of ECMP paths"
+      
+    - name: "significance_level"
+      value: "0.05"
+      description: "Statistical significance level (95% confidence)"
+
+# Report appearance and branding
+appearance:
+  # Report theme
+  theme: "light"
+  
+  # Custom logo (optional)
+  logo:
+    enabled: false
+    path: "configs/allure/logo.png"
+    width: "100px"
+    height: "50px"
+  
+  # Custom favicon (optional)
+  favicon:
+    enabled: false
+    path: "configs/allure/favicon.ico"
+  
+  # Report colors
+  colors:
+    primary: "#0066cc"
+    secondary: "#004499"
+    success: "#28a745"
+    warning: "#ffc107"
+    danger: "#dc3545"
+    info: "#17a2b8"
+  
+  # Report fonts
+  fonts:
+    family: "Arial, sans-serif"
+    size: "14px"
+    headingSize: "18px"
+
+# Environment information display
+environment:
+  # Environment variables to display
+  variables:
+    - name: "Test Environment"
+      value: "Containerlab"
+      description: "Network topology emulation platform"
+      
+    - name: "Routing Platform"
+      value: "FRRouting"
+      description: "Routing protocol implementation"
+      
+    - name: "Hash Algorithm"
+      value: "Source IP"
+      description: "ECMP hash algorithm configuration"
+      
+    - name: "Number of Paths"
+      value: "4"
+      description: "Number of ECMP paths"
+      
+    - name: "Significance Level"
+      value: "0.05"
+      description: "Statistical significance level"
+      
+    - name: "Variance Threshold"
+      value: "15%"
+      description: "Maximum allowed variance from uniform distribution"
+      
+    - name: "Minimum Packets"
+      value: "100"
+      description: "Minimum packets per path for statistical validity"
+
+# Test history and trends
+history:
+  # Enable history tracking
+  enabled: true
+  
+  # History retention (days)
+  retentionDays: 90
+  
+  # Trend analysis
+  trends:
+    enabled: true
+    windowSize: 10  # Number of test runs to analyze
+    
+  # Baseline comparison
+  baseline:
+    enabled: true
+    autoUpdate: false
+    baselineFile: "configs/allure/baseline.json"
+
+# Report sections
+sections:
+  # Overview section
+  overview:
+    enabled: true
+    title: "Overview"
+    description: "Test execution summary and key metrics"
+    
+  # Test cases section
+  testCases:
+    enabled: true
+    title: "Test Cases"
+    description: "Detailed test case results"
+    
+  # Categories section
+  categories:
+    enabled: true
+    title: "Categories"
+    description: "Test failures grouped by category"
+    
+  # Suites section
+  suites:
+    enabled: true
+    title: "Test Suites"
+    description: "Test suite organization"
+    
+  # Graphs section
+  graphs:
+    enabled: true
+    title: "Graphs"
+    description: "Visual representation of test results"
+    
+  # Timeline section
+  timeline:
+    enabled: true
+    title: "Timeline"
+    description: "Test execution timeline"
+    
+  # History section
+  history:
+    enabled: true
+    title: "History"
+    description: "Historical test results and trends"
+
+# Graphs configuration
+graphs:
+  # Pass/fail pie chart
+  passFailPie:
+    enabled: true
+    title: "Pass/Fail Ratio"
+    
+  # Severity bar chart
+  severityBar:
+    enabled: true
+    title: "Failures by Severity"
+    
+  # Duration bar chart
+  durationBar:
+    enabled: true
+    title: "Test Duration"
+    
+  # Trend line chart
+  trendLine:
+    enabled: true
+    title: "Test Trends"
+    windowSize: 20
+    
+  # Distribution histogram
+  distributionHistogram:
+    enabled: true
+    title: "Packet Distribution"
+    bins: 20
+
+# Report export configuration
+export:
+  # Export formats
+  formats:
+    - name: "HTML"
+      enabled: true
+      extension: ".html"
+      
+    - name: "PDF"
+      enabled: false
+      extension: ".pdf"
+      
+    - name: "JSON"
+      enabled: true
+      extension: ".json"
+  
+  # Export directory
+  directory: "results/exports"
+  
+  # Auto-export after test run
+  autoExport: false
+
+# Notification configuration
+notifications:
+  # Email notifications
+  email:
+    enabled: false
+    recipients:
+      - "test-team@example.com"
+    subject: "ECMP Test Results"
+    onFailure: true
+    onSuccess: false
+    
+  # Slack notifications
+  slack:
+    enabled: false
+    webhookUrl: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    channel: "#ecmp-testing"
+    onFailure: true
+    onSuccess: false
+    
+  # Webhook notifications
+  webhook:
+    enabled: false
+    url: "https://your-webhook-url.com/allure"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+
+# Custom plugins
+plugins:
+  # Custom report plugins
+  custom:
+    - name: "ECMP Distribution Plugin"
+      enabled: true
+      path: "configs/allure/plugins/ecmp-distribution.js"
+      description: "Custom plugin for ECMP distribution visualization"
+      
+    - name: "Statistical Analysis Plugin"
+      enabled: true
+      path: "configs/allure/plugins/statistical-analysis.js"
+      description: "Custom plugin for statistical analysis visualization"
+
+# Report metadata
+metadata:
+  # Project information
+  project:
+    name: "ECMP Hash Testing Framework"
+    version: "1.0.0"
+    description: "Automated testing framework for ECMP hash distribution analysis"
+    url: "https://github.com/your-org/ecmp-testing"
+    
+  # Test execution information
+  execution:
+    environment: "Containerlab"
+    platform: "Linux"
+    framework: "Bash/Python"
+    
+  # Test coverage
+  coverage:
+    enabled: true
+    minimum: "80%"
+    
+  # Test documentation
+  documentation:
+    enabled: true
+    url: "https://your-docs-url.com/ecmp-testing"
+
+# Report security
+security:
+  # Enable authentication
+  authentication:
+    enabled: false
+    type: "basic"
+    username: "admin"
+    password: "password"
+    
+  # Enable HTTPS
+  https:
+    enabled: false
+    certificate: "configs/allure/cert.pem"
+    key: "configs/allure/key.pem"
+    
+  # Access control
+  accessControl:
+    enabled: false
+    allowedIPs:
+      - "192.168.1.0/24"
+      - "10.0.0.0/8"
+
+# Report performance
+performance:
+  # Enable caching
+  caching:
+    enabled: true
+    ttl: 3600  # Time to live in seconds
+    
+  # Enable compression
+  compression:
+    enabled: true
+    level: 6
+    
+  # Enable lazy loading
+  lazyLoading:
+    enabled: true
+    threshold: 100  # Number of test cases
+
+# Report localization
+localization:
+  # Default language
+  defaultLanguage: "en"
+  
+  # Supported languages
+  supportedLanguages:
+    - "en"
+    - "ru"
+    
+  # Date format
+  dateFormat: "YYYY-MM-DD HH:mm:ss"
+  
+  # Number format
+  numberFormat:
+    decimalSeparator: "."
+    thousandsSeparator: ","
+    decimalPlaces: 2
+
+# Report debugging
+debugging:
+  # Enable debug mode
+  enabled: false
+  
+  # Log level
+  logLevel: "info"
+  
+  # Log file
+  logFile: "results/allure-debug.log"
+  
+  # Verbose output
+  verbose: false

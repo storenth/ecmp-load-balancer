@@ -1,0 +1,487 @@
+# =============================================================================
+# CI/CD Configuration for ECMP Testing
+# =============================================================================
+# This configuration file defines CI-specific parameters, test scenarios,
+# thresholds, timeouts, and artifact retention policies for the ECMP testing
+# CI/CD pipeline.
+#
+# Reference: https://docs.github.com/en/actions
+# Architecture: ARCHITECTURE.md - Testing Framework Architecture
+# Best Practices: CI/CD Configuration Best Practices
+#
+# Usage:
+#   This file is loaded by the GitHub Actions workflow and can be overridden
+#   by workflow inputs or environment variables.
+# =============================================================================
+
+# =============================================================================
+# Global CI/CD Configuration
+# =============================================================================
+ci_cd:
+  # CI/CD mode (non-interactive)
+  enabled: true
+  
+  # Exit on first error
+  fail_fast: true
+  
+  # Enable debug mode (verbose logging)
+  debug: false
+  
+  # Maximum workflow runtime in minutes
+  max_runtime_minutes: 60
+  
+  # Enable parallel job execution
+  parallel_jobs: true
+
+# =============================================================================
+# Test Configuration
+# =============================================================================
+test:
+  # Test identifier (auto-generated in CI)
+  id: "${GITHUB_RUN_NUMBER}-${GITHUB_SHA}"
+  
+  # Test name
+  name: "ECMP Hash Distribution Test"
+  
+  # Test suite
+  suite: "ECMP Hash Testing Suite"
+  
+  # Default test scenario
+  default_scenario: "basic_distribution"
+  
+  # Test duration in seconds
+  default_duration: 60
+  
+  # Number of packets per source
+  default_packet_count: 1000
+  
+  # Number of test iterations
+  iterations: 1
+  
+  # Delay between iterations in seconds
+  iteration_delay: 10
+
+# =============================================================================
+# Test Scenarios for CI
+# =============================================================================
+scenarios:
+  # Scenario 1: Basic ECMP distribution test (default)
+  - name: "basic_distribution"
+    description: "Test basic ECMP distribution with all source hosts"
+    enabled: true
+    sources: ["h1", "h2", "h3", "h4"]
+    duration: 60
+    packet_count: 4000  # 1000 packets per source
+    timeout: 300  # 5 minutes
+    priority: "high"
+    
+  # Scenario 2: Single source host test
+  - name: "single_source"
+    description: "Test ECMP distribution with single source host"
+    enabled: true
+    sources: ["h1"]
+    duration: 30
+    packet_count: 1000
+    timeout: 180  # 3 minutes
+    priority: "medium"
+    
+  # Scenario 3: High volume test
+  - name: "high_volume"
+    description: "Test ECMP distribution with high traffic volume"
+    enabled: false  # Disabled by default for CI (can be enabled manually)
+    sources: ["h1", "h2", "h3", "h4"]
+    duration: 120
+    packet_count: 10000  # 2500 packets per source
+    timeout: 600  # 10 minutes
+    priority: "low"
+    
+  # Scenario 4: Quick smoke test
+  - name: "smoke_test"
+    description: "Quick smoke test for CI validation"
+    enabled: true
+    sources: ["h1", "h2"]
+    duration: 30
+    packet_count: 500  # 250 packets per source
+    timeout: 120  # 2 minutes
+    priority: "high"
+
+# =============================================================================
+# Analysis Thresholds
+# =============================================================================
+thresholds:
+  # Minimum packets per path for statistical significance
+  min_packets_per_path: 100
+  
+  # Maximum allowed variance from uniform distribution (percentage)
+  max_variance_percent: 15
+  
+  # Chi-square test significance level
+  chi_square_significance: 0.05
+  
+  # Coefficient of variation threshold (percentage)
+  max_cv_percent: 20
+  
+  # Minimum total packets for analysis
+  min_total_packets: 400
+  
+  # Maximum acceptable packet loss (percentage)
+  max_packet_loss_percent: 5
+
+# =============================================================================
+# Timeouts
+# =============================================================================
+timeouts:
+  # Topology deployment timeout (seconds)
+  deploy_topology: 300  # 5 minutes
+  
+  # ECMP configuration timeout (seconds)
+  configure_ecmp: 180  # 3 minutes
+  
+  # Traffic capture timeout (seconds)
+  capture_traffic: 120  # 2 minutes
+  
+  # Traffic generation timeout (seconds)
+  generate_traffic: 180  # 3 minutes
+  
+  # Analysis timeout (seconds)
+  analyze_results: 120  # 2 minutes
+  
+  # Report generation timeout (seconds)
+  generate_report: 60  # 1 minute
+  
+  # Container readiness timeout (seconds)
+  container_ready: 60  # 1 minute
+  
+  # Overall test timeout (seconds)
+  overall_test: 600  # 10 minutes
+
+# =============================================================================
+# Artifact Configuration
+# =============================================================================
+artifacts:
+  # Artifact retention policy (days)
+  retention_days:
+    setup: 1
+    deployment: 7
+    configuration: 7
+    test: 7
+    analysis: 30
+    report: 30
+    complete_archive: 90
+  
+  # Artifact compression
+  compress: true
+  
+  # Artifact naming pattern
+  naming_pattern: "ecmp-test-{test_id}-{timestamp}"
+  
+  # Maximum artifact size (MB)
+  max_size_mb: 500
+  
+  # Include logs in artifacts
+  include_logs: true
+  
+  # Include captures in artifacts
+  include_captures: true
+  
+  # Include analysis in artifacts
+  include_analysis: true
+  
+  # Include reports in artifacts
+  include_reports: true
+
+# =============================================================================
+# Allure Configuration
+# =============================================================================
+allure:
+  # Enable Allure report generation
+  enabled: true
+  
+  # Allure results directory
+  results_dir: "results/allure-results"
+  
+  # Allure report directory
+  report_dir: "results/allure-report"
+  
+  # Clean previous results before generation
+  clean: true
+  
+  # Generate trend analysis
+  generate_trend: false
+  
+  # Open report in browser (not applicable in CI)
+  open: false
+  
+  # Test severity
+  default_severity: "critical"
+  
+  # Test labels
+  labels:
+    epic: "ECMP Testing"
+    feature: "Hash Distribution"
+    story: "Source IP Hash Algorithm"
+    framework: "ECMP Testing Framework"
+    language: "bash"
+
+# =============================================================================
+# Cleanup Configuration
+# =============================================================================
+cleanup:
+  # Cleanup topology after test completion
+  cleanup_topology: true
+  
+  # Cleanup containers after test completion
+  cleanup_containers: true
+  
+  # Cleanup temporary files after test completion
+  cleanup_temp_files: true
+  
+  # Preserve capture files
+  preserve_captures: true
+  
+  # Preserve analysis results
+  preserve_analysis: true
+  
+  # Preserve reports
+  preserve_reports: true
+  
+  # Cleanup delay (seconds)
+  cleanup_delay: 10
+
+# =============================================================================
+# Notification Configuration
+# =============================================================================
+notifications:
+  # Enable notifications
+  enabled: false
+  
+  # Notification channels
+  channels:
+    - name: "github_status"
+      enabled: true
+      type: "github"
+    
+    - name: "slack"
+      enabled: false
+      type: "slack"
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+    
+    - name: "email"
+      enabled: false
+      type: "email"
+      recipients: ["team@example.com"]
+  
+  # Notify on success
+  notify_on_success: false
+  
+  # Notify on failure
+  notify_on_failure: true
+  
+  # Notify on warning
+  notify_on_warning: false
+
+# =============================================================================
+# Caching Configuration
+# =============================================================================
+cache:
+  # Enable caching
+  enabled: true
+  
+  # Cache keys
+  keys:
+    dependencies: "${{ runner.os }}-deps-${{ hashFiles('**/requirements.txt') }}"
+    containerlab: "${{ runner.os }}-containerlab-${{ hashFiles('**/clab-*.yml') }}"
+    
+  # Cache paths
+  paths:
+    - ~/.cache/pip
+    - ~/.local/share/containerlab
+  
+  # Cache retention (days)
+  retention_days: 7
+
+# =============================================================================
+# Parallel Execution Configuration
+# =============================================================================
+parallel:
+  # Enable parallel test execution
+  enabled: false
+  
+  # Maximum parallel jobs
+  max_jobs: 4
+  
+  # Job allocation strategy
+  strategy: "round-robin"  # Options: round-robin, random, load-balanced
+  
+  # Resource limits per job
+  resources:
+    cpu: "2"
+    memory: "4GB"
+    disk: "10GB"
+
+# =============================================================================
+# Retry Configuration
+# =============================================================================
+retry:
+  # Enable retry on failure
+  enabled: true
+  
+  # Maximum retry attempts
+  max_attempts: 3
+  
+  # Retry delay (seconds)
+  retry_delay: 10
+  
+  # Exponential backoff
+  exponential_backoff: true
+  
+  # Retry on specific errors
+  retry_on_errors:
+    - "network timeout"
+    - "container not ready"
+    - "temporary failure"
+
+# =============================================================================
+# Logging Configuration
+# =============================================================================
+logging:
+  # Log level: debug, info, warn, error
+  level: "info"
+  
+  # Log format: text, json
+  format: "text"
+  
+  # Include timestamps in logs
+  timestamps: true
+  
+  # Log file path
+  file: "logs/ci_cd.log"
+  
+  # Enable console output
+  console: true
+  
+  # Enable structured logging
+  structured: false
+  
+  # Log rotation
+  rotation:
+    enabled: true
+    max_size_mb: 100
+    max_files: 10
+
+# =============================================================================
+# Security Configuration
+# =============================================================================
+security:
+  # Enable security scanning
+  enabled: false
+  
+  # Scan for vulnerabilities
+  scan_vulnerabilities: false
+  
+  # Scan for secrets
+  scan_secrets: true
+  
+  # Enforce security policies
+  enforce_policies: false
+  
+  # Allowed container registries
+  allowed_registries:
+    - "docker.io"
+    - "ghcr.io"
+    - "quay.io"
+
+# =============================================================================
+# Performance Configuration
+# =============================================================================
+performance:
+  # Enable performance monitoring
+  enabled: false
+  
+  # Monitor resource usage
+  monitor_resources: true
+  
+  # Monitor execution time
+  monitor_execution_time: true
+  
+  # Performance thresholds
+  thresholds:
+    max_cpu_percent: 80
+    max_memory_percent: 80
+    max_disk_percent: 90
+    max_execution_time_minutes: 30
+
+# =============================================================================
+# Validation Configuration
+# =============================================================================
+validation:
+  # Enable pre-flight validation
+  enabled: true
+  
+  # Validate topology file
+  validate_topology: true
+  
+  # Validate configuration files
+  validate_config: true
+  
+  # Validate scripts
+  validate_scripts: true
+  
+  # Validate dependencies
+  validate_dependencies: true
+  
+  # Fail on validation errors
+  fail_on_errors: true
+
+# =============================================================================
+# Environment Configuration
+# =============================================================================
+environment:
+  # CI environment
+  name: "github-actions"
+  
+  # Environment type: ci, staging, production
+  type: "ci"
+  
+  # Environment variables
+  variables:
+    DEBIAN_FRONTEND: "noninteractive"
+    TZ: "UTC"
+    LANG: "C.UTF-8"
+    LC_ALL: "C.UTF-8"
+  
+  # Secrets (to be set in GitHub Secrets)
+  secrets:
+    - name: "SLACK_WEBHOOK_URL"
+      required: false
+    - name: "EMAIL_SMTP_SERVER"
+      required: false
+    - name: "EMAIL_SMTP_PORT"
+      required: false
+    - name: "EMAIL_USERNAME"
+      required: false
+    - name: "EMAIL_PASSWORD"
+      required: false
+
+# =============================================================================
+# Feature Flags
+# =============================================================================
+features:
+  # Enable experimental features
+  experimental: false
+  
+  # Enable beta features
+  beta: false
+  
+  # Enable deprecated features
+  deprecated: false
+  
+  # Custom feature flags
+  custom:
+    enable_parallel_tests: false
+    enable_advanced_analytics: false
+    enable_ml_analysis: false
+
+# =============================================================================
+# End of CI/CD Configuration
+# =============================================================================

@@ -1,0 +1,34 @@
+#
+# FRRouting Daemons Configuration for Core Router R3
+#
+# This file controls which FRRouting daemons are enabled.
+#
+# Reference: https://docs.frrouting.org/en/latest/daemons.html
+#
+
+# Enable zebra daemon (required for all routing)
+zebra=yes
+
+# Enable OSPF daemon for dynamic routing
+ospfd=yes
+
+# Disable other daemons (not needed for ECMP testing)
+bgpd=no
+ospf6d=no
+ripd=no
+ripngd=no
+isisd=no
+pimd=no
+ldpd=no
+nhrpd=no
+eigrpd=no
+babeld=no
+sharpd=no
+pbrd=no
+bfdd=no
+fabricd=no
+vrrpd=no
+
+# Daemon options
+zebra_options="  -A 127.0.0.1 -s 90000000"
+ospfd_options="  -A 127.0.0.1"

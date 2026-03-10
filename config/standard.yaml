@@ -1,0 +1,405 @@
+# =============================================================================
+# Standard Configuration for ECMP Hash Validation
+# =============================================================================
+#
+# This is a balanced configuration for typical use cases. It provides a good
+# balance between simplicity and functionality, including most common features
+# without overwhelming complexity.
+#
+# Usage:
+#   make test CONFIG=config/standard.yaml
+#
+# For simpler configuration, see config/quick_start.yaml
+# For full-featured configuration, see config/advanced.yaml
+#
+# =============================================================================
+
+# =============================================================================
+# TEST METADATA
+# =============================================================================
+test:
+  # Test name - identifies this test run
+  name: "standard-ecmp-test"
+  
+  # Configuration version
+  version: "1.0.0"
+  
+  # Human-readable description
+  description: |
+    Standard ECMP hash validation test with balanced configuration.
+    Tests traffic distribution across multiple ECMP paths with
+    statistical analysis and comprehensive reporting.
+  
+  # Test author
+  author: "Network Testing Team"
+  
+  # Creation date
+  created: "2026-03-06"
+  
+  # Test duration in seconds (2 minutes for better statistical significance)
+  duration_sec: 120
+  
+  # Number of test iterations for statistical significance
+  iterations: 3
+  
+  # Delay between iterations in seconds
+  iteration_delay_sec: 10
+  
+  # Enable verbose logging for debugging
+  verbose: false
+  
+  # Output directory for results
+  output_dir: "results"
+
+# =============================================================================
+# TOPOLOGY CONFIGURATION
+# =============================================================================
+topology:
+  # ECMP router name in topology
+  ecmp_router: "ecmp-router"
+  
+  # Traffic generator host name
+  traffic_gen: "traffic-gen"
+  
+  # Destination network CIDR
+  dst_network: "10.0.10.0/30"
+  
+  # Destination IP address for test traffic
+  dst_ip: "10.0.10.10"
+  
+  # Number of ECMP paths (2, 3, or 4)
+  expected_paths: 4
+  
+  # Topology file to use
+  # Available options:
+  #   - topology/clab-ecmp-2paths.yml (2 paths)
+  #   - topology/clab-ecmp-3paths.yml (3 paths)
+  #   - topology/clab-ecmp-4paths.yml (4 paths)
+  #   - topology/clab-ecmp-test.yml (default 4-path topology)
+  topology_file: "topology/clab-ecmp-test.yml"
+  
+  # List of next-hop routers in the ECMP group
+  next_hops:
+    - name: "r2"
+      ip: "10.0.2.2"
+      container: "clab-ecmp-test-r2"
+      interface: "eth0"
+      enabled: true
+    
+    - name: "r3"
+      ip: "10.0.3.2"
+      container: "clab-ecmp-test-r3"
+      interface: "eth0"
+      enabled: true
+    
+    - name: "r4"
+      ip: "10.0.4.2"
+      container: "clab-ecmp-test-r4"
+      interface: "eth0"
+      enabled: true
+    
+    - name: "r5"
+      ip: "10.0.5.2"
+      container: "clab-ecmp-test-r5"
+      interface: "eth0"
+      enabled: true
+
+# =============================================================================
+# TRAFFIC GENERATION
+# =============================================================================
+traffic:
+  # Source IP range for traffic
+  # Format: "start_ip-end_ip"
+  src_ip_range: "10.0.1.10-10.0.1.13"
+  
+  # Number of packets to send per source IP
+  packets_per_src: 2000
+  
+  # Protocol type: icmp, tcp, or udp
+  protocol: "tcp"
+  
+  # Interval between packets in milliseconds
+  interval_ms: 10
+  
+  # Test duration in seconds (should match test.duration_sec)
+  duration_sec: 120
+  
+  # Destination IP address for traffic
+  destination_ip: "10.0.10.10"
+  
+  # Destination port for TCP/UDP traffic
+  destination_port: 80
+  
+  # Source port for TCP/UDP traffic (0 = random)
+  source_port: 0
+  
+  # Packet size in bytes
+  packet_size_bytes: 100
+  
+  # TTL value for IP packets
+  ttl: 64
+  
+  # Traffic generation tool configuration
+  tool:
+    # Tool to use: hping3, ping, or iperf3
+    name: "hping3"
+    
+    # hping3 specific parameters
+    hping3:
+      # TCP flags for SYN packets
+      flags: "S"
+      
+      # Flood mode (WARNING: can overwhelm network)
+      flood: false
+    
+    # ping specific parameters
+    ping:
+      # Ping interval in seconds
+      interval_sec: 0.01
+    
+    # iperf3 specific parameters
+    iperf3:
+      # Bandwidth limit in bits per second (0 = unlimited)
+      bandwidth_bps: 0
+      
+      # Number of parallel streams
+      streams: 1
+
+# =============================================================================
+# ECMP CONFIGURATION
+# =============================================================================
+ecmp:
+  # Hash algorithm for path selection
+  # Options:
+  #   - "src-ip": Hash based on source IP only
+  #   - "dst-ip": Hash based on destination IP only
+  #   - "src-dst-ip": Hash based on both source and destination IP
+  #   - "5-tuple": Hash based on full 5-tuple
+  hash_policy: "src-ip"
+  
+  # Expected number of ECMP paths
+  expected_paths: 4
+  
+  # Acceptable deviation from uniform distribution (%)
+  tolerance_percent: 10.0
+  
+  # Minimum packets per path for statistical significance
+  min_packets_per_path: 100
+  
+  # Enable path stickiness validation
+  enable_stickiness_check: true
+  
+  # Stickiness threshold in percentage
+  stickiness_threshold_percent: 95.0
+  
+  # Hash seed value (if applicable)
+  hash_seed: 0
+
+# =============================================================================
+# ANALYSIS CONFIGURATION
+# =============================================================================
+analysis:
+  # Minimum total packets required for analysis
+  min_packets: 1000
+  
+  # Minimum unique source IPs required
+  min_unique_src_ips: 4
+  
+  # Path stickiness threshold in percentage
+  stickiness_threshold_percent: 95.0
+  
+  # Maximum acceptable deviation from ideal balance
+  balance_deviation_threshold_percent: 10.0
+  
+  # Statistical confidence level (0.95 = 95% confidence)
+  confidence_level: 0.95
+  
+  # Enable chi-square test for distribution uniformity
+  enable_chi_square: true
+  
+  # Chi-square critical value (for 4 paths at 95% confidence)
+  chi_square_critical: 7.815
+  
+  # Enable Kolmogorov-Smirnov test
+  enable_ks_test: false
+  
+  # Enable trend analysis across iterations
+  enable_trend_analysis: true
+  
+  # Enable outlier detection
+  enable_outlier_detection: true
+  
+  # Outlier detection method: iqr, zscore, or isolation_forest
+  outlier_detection_method: "iqr"
+  
+  # Outlier threshold
+  outlier_threshold: 1.5
+
+# =============================================================================
+# REPORT CONFIGURATION
+# =============================================================================
+report:
+  # Report formats to generate
+  formats:
+    - "allure"
+    - "json"
+    - "html"
+  
+  # Output directory for reports
+  output_dir: "results/reports"
+  
+  # Include PCAP samples in reports
+  include_pcap_samples: false
+  
+  # Maximum number of PCAP samples to include
+  max_pcap_samples: 10
+  
+  # Generate trend analysis reports
+  generate_trends: true
+  
+  # Number of historical runs to include in trend analysis
+  trend_history_runs: 10
+  
+  # Include detailed statistics in reports
+  include_detailed_stats: true
+  
+  # Include graphs and charts in reports
+  include_graphs: true
+  
+  # Graph types to generate
+  graph_types:
+    - "distribution"
+    - "timeline"
+    - "heatmap"
+  
+  # Report title
+  title: "ECMP Hash Validation Test Report"
+  
+  # Include executive summary
+  include_executive_summary: true
+  
+  # Include recommendations section
+  include_recommendations: true
+  
+  # Include raw data appendix
+  include_raw_data: false
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+logging:
+  # Log level: debug, info, warn, error
+  level: "info"
+  
+  # Log file path
+  file: "logs/test_execution.log"
+  
+  # Enable console output
+  console: true
+  
+  # Log format: text or json
+  format: "text"
+  
+  # Include timestamps in logs
+  timestamps: true
+  
+  # Include log level in output
+  include_level: true
+  
+  # Include source file and line number
+  include_source: false
+  
+  # Maximum log file size in MB before rotation
+  max_file_size_mb: 100
+  
+  # Number of backup log files to keep
+  backup_count: 5
+
+# =============================================================================
+# CI/CD INTEGRATION
+# =============================================================================
+ci_cd:
+  # Enable CI/CD mode (non-interactive)
+  enabled: false
+  
+  # Exit on first error
+  fail_fast: true
+  
+  # Generate Allure report
+  generate_report: true
+  
+  # Allure results directory
+  allure_results_dir: "results/allure-results"
+  
+  # Cleanup after test completion
+  cleanup: true
+  
+  # Preserve capture files
+  preserve_captures: true
+  
+  # Upload artifacts to artifact storage
+  upload_artifacts: false
+  
+  # Artifact storage URL
+  artifact_url: ""
+  
+  # Send notifications on test completion
+  send_notifications: false
+  
+  # Notification channels
+  notification_channels: []
+  
+  # Notification webhook URL
+  webhook_url: ""
+
+# =============================================================================
+# TEST SCENARIOS
+# =============================================================================
+scenarios:
+  # Scenario 1: Basic ECMP distribution test
+  - name: "basic_distribution"
+    description: "Test basic ECMP distribution with all source hosts"
+    enabled: true
+    parameters:
+      sources: ["h1", "h2", "h3", "h4"]
+      duration_sec: 120
+      packets_per_src: 2000
+      expected_paths: 4
+      tolerance_percent: 10.0
+      hash_policy: "src-ip"
+  
+  # Scenario 2: Single source host test
+  - name: "single_source"
+    description: "Test ECMP distribution with single source host"
+    enabled: true
+    parameters:
+      sources: ["h1"]
+      duration_sec: 60
+      packets_per_src: 2000
+      expected_paths: 4
+      tolerance_percent: 10.0
+      hash_policy: "src-ip"
+  
+  # Scenario 3: High volume test
+  - name: "high_volume"
+    description: "Test ECMP distribution with high traffic volume"
+    enabled: true
+    parameters:
+      sources: ["h1", "h2", "h3", "h4"]
+      duration_sec: 180
+      packets_per_src: 3000
+      expected_paths: 4
+      tolerance_percent: 10.0
+      hash_policy: "src-ip"
+
+# =============================================================================
+# END OF STANDARD CONFIGURATION
+# =============================================================================
+#
+# Next Steps:
+#   1. Run: make test CONFIG=config/standard.yaml
+#   2. View results: make open-report
+#   3. For more features: see config/advanced.yaml
+#   4. For simpler config: see config/quick_start.yaml
+#
+# =============================================================================

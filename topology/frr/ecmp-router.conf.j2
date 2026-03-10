@@ -1,0 +1,71 @@
+!
+! FRRouting Configuration for Edge Router (R1)
+! This router implements ECMP with {{ num_paths }} equal-cost paths to the destination network
+!
+! Reference: https://docs.frrouting.org/
+! Architecture: ARCHITECTURE.md
+!
+
+frr version 8.4_git
+frr defaults traditional
+hostname ecmp-edge-router-r1
+log syslog informational
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+
+! Interface configurations
+interface eth0
+ description Source Network Interface
+ ip address 10.0.1.1/24
+!
+{% for i in range(1, num_paths + 1) %}
+interface eth{{ i }}
+ description ECMP Path {{ i }} to Core Router R{{ i + 1 }}
+ ip address 10.0.{{ i + 1 }}.1/24
+!
+{% endfor %}
+interface lo
+ description Loopback Interface
+ ip address 10.0.1.1/32
+!
+
+! OSPF Configuration
+router ospf
+ ospf router-id 10.0.1.1
+ network 10.0.1.0/24 area 0
+{% for i in range(1, num_paths + 1) %}
+ network 10.0.{{ i + 1 }}.0/24 area 0
+{% endfor %}
+ passive-interface eth0
+!
+
+! Static Routes for ECMP
+! These {{ num_paths }} routes have equal cost (metric 100) to enable ECMP
+{% for i in range(1, num_paths + 1) %}
+ip route 192.168.100.0/24 10.0.{{ i + 1 }}.2 100
+{% endfor %}
+!
+
+! BGP Configuration with ECMP support
+router bgp 65001
+ bgp router-id 10.0.1.1
+{% for i in range(1, num_paths + 1) %}
+ neighbor 10.0.{{ i + 1 }}.2 remote-as 65002
+{% endfor %}
+!
+ address-family ipv4 unicast
+{% for i in range(1, num_paths + 1) %}
+  neighbor 10.0.{{ i + 1 }}.2 activate
+{% endfor %}
+  maximum-paths {{ num_paths }}
+ exit-address-family
+!
+
+! Zebra Configuration for ECMP Hash Policy
+ip multipath hash-policy src-ip
+!
+
+! Line configuration
+line vty
+!

@@ -1,0 +1,254 @@
+# Traffic Generation Configuration for ECMP Hash Testing
+#
+# This configuration file defines test parameters for generating traffic
+# to validate ECMP hash behavior based on Source IP address only.
+#
+# Reference: ARCHITECTURE.md - Testing Framework Architecture
+# Best Practices: RFC 2544 benchmarking methodology
+
+# Global test configuration
+test:
+  # Test identifier for tracking and reporting
+  name: "ecmp-hash-source-ip-test"
+  description: "ECMP hash testing with Source IP as the hash key"
+  
+  # Test duration in seconds
+  duration: 60
+  
+  # Number of test iterations for statistical significance
+  iterations: 5
+  
+  # Delay between iterations in seconds
+  iteration_delay: 10
+  
+  # Enable verbose logging
+  verbose: true
+  
+  # Output directory for test results
+  output_dir: "results"
+
+# Traffic generation parameters
+traffic:
+  # Destination configuration (constant across all traffic)
+  destination:
+    ip: "192.168.100.10"  # Destination host d1
+    port: 80              # HTTP port for TCP traffic
+    protocol: "tcp"       # Protocol type: tcp, udp, icmp
+  
+  # Source hosts configuration
+  sources:
+    # Source host h1
+    - name: "h1"
+      ip: "10.0.1.10"
+      container: "clab-ecmp-test-h1"
+      enabled: true
+    
+    # Source host h2
+    - name: "h2"
+      ip: "10.0.1.11"
+      container: "clab-ecmp-test-h2"
+      enabled: true
+    
+    # Source host h3
+    - name: "h3"
+      ip: "10.0.1.12"
+      container: "clab-ecmp-test-h3"
+      enabled: true
+    
+    # Source host h4
+    - name: "h4"
+      ip: "10.0.1.13"
+      container: "clab-ecmp-test-h4"
+      enabled: true
+  
+  # Traffic generation tool configuration
+  tool:
+    # Tool to use: hping3, ping, or custom
+    name: "hping3"
+    
+    # hping3 specific parameters
+    hping3:
+      # Packet count per source host
+      count: 1000
+      
+      # Interval between packets in milliseconds
+      interval: 10
+      
+      # Packet size in bytes (excluding headers)
+      size: 100
+      
+      # TCP flags (for TCP traffic)
+      flags: "S"  # SYN packets
+      
+      # Destination port
+      dest_port: 80
+      
+      # Source port (0 for random)
+      source_port: 0
+      
+      # TTL value
+      ttl: 64
+    
+    # ping specific parameters
+    ping:
+      # Packet count per source host
+      count: 1000
+      
+      # Interval between packets in seconds
+      interval: 0.01
+      
+      # Packet size in bytes
+      size: 100
+      
+      # TTL value
+      ttl: 64
+
+# Traffic capture configuration
+capture:
+  # Capture duration in seconds (should match or exceed test duration)
+  duration: 70
+  
+  # Capture buffer size in MB
+  buffer_size: 100
+  
+  # Capture filter (BPF syntax)
+  # Reference: https://www.tcpdump.org/manpages/tcpdump.1.html
+  filter: "host 192.168.100.10 and (tcp port 80 or icmp)"
+  
+  # Capture points on ECMP paths
+  paths:
+    # ECMP Path 1 - Core Router R2
+    - name: "path1"
+      router: "r2"
+      container: "clab-ecmp-test-r2"
+      interface: "eth0"  # Interface facing edge router
+      description: "ECMP Path 1 via R2"
+      enabled: true
+    
+    # ECMP Path 2 - Core Router R3
+    - name: "path2"
+      router: "r3"
+      container: "clab-ecmp-test-r3"
+      interface: "eth0"  # Interface facing edge router
+      description: "ECMP Path 2 via R3"
+      enabled: true
+    
+    # ECMP Path 3 - Core Router R4
+    - name: "path3"
+      router: "r4"
+      container: "clab-ecmp-test-r4"
+      interface: "eth0"  # Interface facing edge router
+      description: "ECMP Path 3 via R4"
+      enabled: true
+    
+    # ECMP Path 4 - Core Router R5
+    - name: "path4"
+      router: "r5"
+      container: "clab-ecmp-test-r5"
+      interface: "eth0"  # Interface facing edge router
+      description: "ECMP Path 4 via R5"
+      enabled: true
+  
+  # Output directory for capture files
+  output_dir: "captures"
+  
+  # File naming pattern
+  file_pattern: "{test_name}_{path_name}_{timestamp}.pcap"
+
+# Expected distribution thresholds for validation
+# Reference: RFC 2330 - Framework for IP Performance Metrics
+distribution:
+  # Number of ECMP paths
+  paths: 4
+  
+  # Expected distribution percentage per path (ideal: 25% each)
+  expected_percentage: 25.0
+  
+  # Acceptable deviation from expected percentage
+  # This accounts for statistical variance
+  tolerance_percentage: 10.0
+  
+  # Minimum packets per path for statistical significance
+  min_packets_per_path: 100
+  
+  # Statistical confidence level (0.95 = 95%)
+  confidence_level: 0.95
+  
+  # Enable chi-square test for distribution uniformity
+  enable_chi_square: true
+  
+  # Chi-square critical value for 4 paths at 95% confidence
+  chi_square_critical: 7.815
+
+# Test scenarios
+scenarios:
+  # Scenario 1: Basic ECMP distribution test
+  - name: "basic_distribution"
+    description: "Test basic ECMP distribution with all source hosts"
+    enabled: true
+    sources: ["h1", "h2", "h3", "h4"]
+    duration: 60
+    packet_count: 4000  # 1000 packets per source
+    
+  # Scenario 2: Single source host test
+  - name: "single_source"
+    description: "Test ECMP distribution with single source host"
+    enabled: true
+    sources: ["h1"]
+    duration: 30
+    packet_count: 1000
+    
+  # Scenario 3: High volume test
+  - name: "high_volume"
+    description: "Test ECMP distribution with high traffic volume"
+    enabled: true
+    sources: ["h1", "h2", "h3", "h4"]
+    duration: 120
+    packet_count: 10000  # 2500 packets per source
+    
+  # Scenario 4: Burst traffic test
+  - name: "burst_traffic"
+    description: "Test ECMP distribution with burst traffic pattern"
+    enabled: false
+    sources: ["h1", "h2", "h3", "h4"]
+    duration: 60
+    packet_count: 4000
+    burst_size: 100
+    burst_interval: 1
+
+# Logging configuration
+logging:
+  # Log level: debug, info, warn, error
+  level: "info"
+  
+  # Log file path
+  file: "logs/traffic_generation.log"
+  
+  # Enable console output
+  console: true
+  
+  # Log format: text, json
+  format: "text"
+  
+  # Include timestamps in logs
+  timestamps: true
+
+# CI/CD integration
+ci_cd:
+  # Enable CI/CD mode (non-interactive)
+  enabled: false
+  
+  # Exit on first error
+  fail_fast: true
+  
+  # Generate Allure report
+  generate_report: true
+  
+  # Allure results directory
+  allure_results_dir: "allure-results"
+  
+  # Cleanup after test completion
+  cleanup: true
+  
+  # Preserve capture files
+  preserve_captures: true

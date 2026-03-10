@@ -1,0 +1,280 @@
+name: Generate Reports
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_format:
+        description: 'Report format to generate'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'allure'
+          - 'iso29119'
+          - 'json'
+          - 'html'
+      path_count:
+        description: 'Number of ECMP paths'
+        required: false
+        default: '4'
+        type: choice
+        options:
+          - '2'
+          - '3'
+          - '4'
+          - 'all'
+      hash_policy:
+        description: 'Hash policy'
+        required: false
+        default: 'L4'
+        type: choice
+        options:
+          - 'L3'
+          - 'L4'
+          - 'all'
+      comment_on_pr:
+        description: 'Comment on PR with report summary'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  CONFIG_FILE: config/test_config.yaml
+  RESULTS_DIR: results
+
+jobs:
+  generate-reports:
+    name: Generate Reports
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: ${{ env.RESULTS_DIR }}/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: ${{ env.RESULTS_DIR }}/allure-results/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Create report directories
+        run: |
+          mkdir -p ${{ env.RESULTS_DIR }}/reports/{allure,iso29119,json,html}
+
+      - name: Generate Allure report
+        if: github.event.inputs.report_format == 'all' || github.event.inputs.report_format == 'allure'
+        run: |
+          bash scripts/generate_allure_report.sh \
+            --input ${{ env.RESULTS_DIR }}/allure-results \
+            --output ${{ env.RESULTS_DIR }}/reports/allure
+        continue-on-error: true
+
+      - name: Generate ISO 29119-3 report
+        if: github.event.inputs.report_format == 'all' || github.event.inputs.report_format == 'iso29119'
+        run: |
+          if [ "${{ github.event.inputs.path_count }}" == "all" ]; then
+            for paths in 2 3 4; do
+              if [ "${{ github.event.inputs.hash_policy }}" == "all" ]; then
+                for policy in L3 L4; do
+                  python scripts/report_gen.py \
+                    --format iso29119 \
+                    --input ${{ env.RESULTS_DIR }}/analysis \
+                    --output ${{ env.RESULTS_DIR }}/reports/iso29119 \
+                    --paths $paths \
+                    --hash-policy $policy
+                done
+              else
+                python scripts/report_gen.py \
+                  --format iso29119 \
+                  --input ${{ env.RESULTS_DIR }}/analysis \
+                  --output ${{ env.RESULTS_DIR }}/reports/iso29119 \
+                  --paths $paths \
+                  --hash-policy ${{ github.event.inputs.hash_policy }}
+              fi
+            done
+          else
+            if [ "${{ github.event.inputs.hash_policy }}" == "all" ]; then
+              for policy in L3 L4; do
+                python scripts/report_gen.py \
+                  --format iso29119 \
+                  --input ${{ env.RESULTS_DIR }}/analysis \
+                  --output ${{ env.RESULTS_DIR }}/reports/iso29119 \
+                  --paths ${{ github.event.inputs.path_count }} \
+                  --hash-policy $policy
+              done
+            else
+              python scripts/report_gen.py \
+                --format iso29119 \
+                --input ${{ env.RESULTS_DIR }}/analysis \
+                --output ${{ env.RESULTS_DIR }}/reports/iso29119 \
+                --paths ${{ github.event.inputs.path_count }} \
+                --hash-policy ${{ github.event.inputs.hash_policy }}
+            fi
+          fi
+        continue-on-error: true
+
+      - name: Generate JSON report
+        if: github.event.inputs.report_format == 'all' || github.event.inputs.report_format == 'json'
+        run: |
+          if [ "${{ github.event.inputs.path_count }}" == "all" ]; then
+            for paths in 2 3 4; do
+              if [ "${{ github.event.inputs.hash_policy }}" == "all" ]; then
+                for policy in L3 L4; do
+                  python scripts/report_gen.py \
+                    --format json \
+                    --input ${{ env.RESULTS_DIR }}/analysis \
+                    --output ${{ env.RESULTS_DIR }}/reports/json \
+                    --paths $paths \
+                    --hash-policy $policy
+                done
+              else
+                python scripts/report_gen.py \
+                  --format json \
+                  --input ${{ env.RESULTS_DIR }}/analysis \
+                  --output ${{ env.RESULTS_DIR }}/reports/json \
+                  --paths $paths \
+                  --hash-policy ${{ github.event.inputs.hash_policy }}
+              fi
+            done
+          else
+            if [ "${{ github.event.inputs.hash_policy }}" == "all" ]; then
+              for policy in L3 L4; do
+                python scripts/report_gen.py \
+                  --format json \
+                  --input ${{ env.RESULTS_DIR }}/analysis \
+                  --output ${{ env.RESULTS_DIR }}/reports/json \
+                  --paths ${{ github.event.inputs.path_count }} \
+                  --hash-policy $policy
+              done
+            else
+              python scripts/report_gen.py \
+                --format json \
+                --input ${{ env.RESULTS_DIR }}/analysis \
+                --output ${{ env.RESULTS_DIR }}/reports/json \
+                --paths ${{ github.event.inputs.path_count }} \
+                --hash-policy ${{ github.event.inputs.hash_policy }}
+            fi
+          fi
+
+      - name: Generate HTML report
+        if: github.event.inputs.report_format == 'all' || github.event.inputs.report_format == 'html'
+        run: |
+          if [ "${{ github.event.inputs.path_count }}" == "all" ]; then
+            for paths in 2 3 4; do
+              if [ "${{ github.event.inputs.hash_policy }}" == "all" ]; then
+                for policy in L3 L4; do
+                  python scripts/report_gen.py \
+                    --format html \
+                    --input ${{ env.RESULTS_DIR }}/analysis \
+                    --output ${{ env.RESULTS_DIR }}/reports/html \
+                    --paths $paths \
+                    --hash-policy $policy
+                done
+              else
+                python scripts/report_gen.py \
+                  --format html \
+                  --input ${{ env.RESULTS_DIR }}/analysis \
+                  --output ${{ env.RESULTS_DIR }}/reports/html \
+                  --paths $paths \
+                  --hash-policy ${{ github.event.inputs.hash_policy }}
+              fi
+            done
+          else
+            if [ "${{ github.event.inputs.hash_policy }}" == "all" ]; then
+              for policy in L3 L4; do
+                python scripts/report_gen.py \
+                  --format html \
+                  --input ${{ env.RESULTS_DIR }}/analysis \
+                  --output ${{ env.RESULTS_DIR }}/reports/html \
+                  --paths ${{ github.event.inputs.path_count }} \
+                  --hash-policy $policy
+              done
+            else
+              python scripts/report_gen.py \
+                --format html \
+                --input ${{ env.RESULTS_DIR }}/analysis \
+                --output ${{ env.RESULTS_DIR }}/reports/html \
+                --paths ${{ github.event.inputs.path_count }} \
+                --hash-policy ${{ github.event.inputs.hash_policy }}
+            fi
+          fi
+
+      - name: Generate report summary
+        run: |
+          echo "# Report Generation Summary" > ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "## Configuration" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "- **Report Format:** ${{ github.event.inputs.report_format }}" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "- **Path Count:** ${{ github.event.inputs.path_count }}" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "- **Hash Policy:** ${{ github.event.inputs.hash_policy }}" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "- **Generated At:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          echo "## Generated Reports" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          
+          if [ -d "${{ env.RESULTS_DIR }}/reports/allure" ]; then
+            echo "- ✅ Allure Report" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          fi
+          
+          if [ -d "${{ env.RESULTS_DIR }}/reports/iso29119" ]; then
+            echo "- ✅ ISO 29119-3 Report" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          fi
+          
+          if [ -d "${{ env.RESULTS_DIR }}/reports/json" ]; then
+            echo "- ✅ JSON Report" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          fi
+          
+          if [ -d "${{ env.RESULTS_DIR }}/reports/html" ]; then
+            echo "- ✅ HTML Report" >> ${{ env.RESULTS_DIR }}/reports/summary.md
+          fi
+
+      - name: Upload reports as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ github.run_number }}
+          path: ${{ env.RESULTS_DIR }}/reports/
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event.inputs.comment_on_pr == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('${{ env.RESULTS_DIR }}/reports/summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Generate workflow summary
+        run: |
+          cat ${{ env.RESULTS_DIR }}/reports/summary.md >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Download Reports" >> $GITHUB_STEP_SUMMARY
+          echo "Reports are available as artifacts in this workflow run." >> $GITHUB_STEP_SUMMARY

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project implements a minimal static topology for testing ECMP (Equal-Cost Multi-Path) routing with hash-based path selection using Source IP addresses. The solution uses Linux network namespaces and bash scripts to create a complete testing environment without requiring virtualization software like QEMU/KVM.
+This project implements a minimal static topology for testing ECMP (Equal-Cost Multi-Path) routing with hash-based path selection using Source IP addresses. The solution uses Linux network namespaces and bash scripts to create a complete environment.
 
 ## Architecture
 
@@ -10,8 +10,8 @@ This project implements a minimal static topology for testing ECMP (Equal-Cost M
 
 ```
 Source1 (192.168.1.10) ──┐
-                           ├── Router (192.168.1.1/192.168.10.1) ──┬── Path 1 (192.168.2.0/24) ──┐
-Source2 (192.168.10.10) ──┘                              └── Path 2 (192.168.3.0/24) ──┼── Dest (192.168.4.10)
+                         ├── Router (192.168.1.1/192.168.10.1) ──┬── Path 1 (192.168.2.0/24) ──┐
+Source2 (192.168.10.10) ─┘                                       └── Path 2 (192.168.3.0/24) ──┼── Dest (192.168.4.10)
 ```
 
 ### Components
@@ -68,7 +68,7 @@ This creates two equal-cost paths to the destination network, allowing the Linux
 
 **Authoritative Sources:**
 - [ip-route(8) - Linux manual page](https://man7.org/linux/man-pages/man8/ip-route.8.html)
-- [Linux ECMP Implementation](https://www.kernel.org/doc/Documentation/networking/multipath.txt)
+- [Linux ECMP Implementation](https://www.kernel.org/doc/html/v5.13/networking/ip-sysctl.html)
 
 ### 3. Traffic Generation (ICMP and TCP)
 
@@ -111,11 +111,6 @@ This creates two equal-cost paths to the destination network, allowing the Linux
 - **Source IP Hashing:** By default, Linux uses a hash based on source IP, destination IP, and other fields
 - **Testing Focus:** The goal is to verify ECMP behavior, not to implement custom hash algorithms
 - **RFC Compliance:** Linux implementation follows RFC 2991 and RFC 2992 guidelines
-
-**Authoritative Sources:**
-- [RFC 2991: Multipath Issues in Unicast and Multicast Next-Hop Selection](https://tools.ietf.org/html/rfc2991)
-- [RFC 2992: Analysis of an Equal-Cost Multi-Path Algorithm](https://tools.ietf.org/html/rfc2992)
-- [Linux Kernel Multipath Routing](https://www.kernel.org/doc/Documentation/networking/multipath.txt)
 
 ## Implementation Details
 
@@ -285,15 +280,16 @@ When ECMP hash is working correctly:
 - ECMP hash may route both sources to the same path
 - Add more source IPs for better distribution testing
 
-## Testing Standards Compliance
+## Testing Standards Compliance n References
 
 This implementation follows the testing methodology outlined in:
 
-- **ISO/IEC/IEEE 29119-3**: Software and systems engineering — Software testing — Part 3: Test documentation
-- **RFC 2991**: Multipath Issues in Unicast and Multicast Next-Hop Selection
-- **RFC 2992**: Analysis of an Equal-Cost Multi-Path Algorithm
-- **RFC 2544**: Benchmarking Methodology for Network Interconnect Devices
-- **RFC 2330**: Framework for IP Performance Metrics
+- [ISO/IEC/IEEE 29119-3](https://www.iso.org/standard/65174.html): Software and systems engineering — Software testing — Part 3: Test documentation
+- [IEEE 829](https://standards.ieee.org/standard/829-2008.html): Standard for Software and System Test Documentation
+- [RFC 2991](https://tools.ietf.org/html/rfc2991): Multipath Issues in Unicast and Multicast Next-Hop Selection
+- [RFC 2992](https://tools.ietf.org/html/rfc2992): Analysis of an Equal-Cost Multi-Path Algorithm
+- [RFC 2544](https://tools.ietf.org/html/rfc2544): Benchmarking Methodology for Network Interconnect Devices
+- [RFC 2330](https://tools.ietf.org/html/rfc2330): Framework for IP Performance Metrics
 
 ## Limitations
 
@@ -303,28 +299,5 @@ This implementation follows the testing methodology outlined in:
 4. **Resilient Hashing**: Not tested in this implementation (as noted in requirements).
 5. **Symmetric Hashing**: Not tested in this implementation (as noted in requirements).
 
-## References
-
-### RFC Standards
-- [RFC 2991](https://tools.ietf.org/html/rfc2991): Multipath Issues in Unicast and Multicast Next-Hop Selection
-- [RFC 2992](https://tools.ietf.org/html/rfc2992): Analysis of an Equal-Cost Multi-Path Algorithm
-- [RFC 2544](https://tools.ietf.org/html/rfc2544): Benchmarking Methodology for Network Interconnect Devices
-- [RFC 2330](https://tools.ietf.org/html/rfc2330): Framework for IP Performance Metrics
-
-### Linux Documentation
-- [Network Namespaces](https://man7.org/linux/man-pages/man7/network_namespaces.7.html)
-- [ip-route(8)](https://man7.org/linux/man-pages/man8/ip-route.8.html)
-- [ip-netns(8)](https://man7.org/linux/man-pages/man8/ip-netns.8.html)
-- [Multipath Routing](https://www.kernel.org/doc/Documentation/networking/multipath.txt)
-
-### Testing Standards
-- [ISO/IEC/IEEE 29119-3](https://www.iso.org/standard/65174.html): Software and systems engineering — Software testing — Part 3: Test documentation
-- [IEEE 829](https://standards.ieee.org/standard/829-2008.html): Standard for Software and System Test Documentation
-
 ## License
-
 This project is provided as-is for educational and testing purposes.
-
-## Contributing
-
-Contributions are welcome! Please ensure any changes maintain the minimal, bash-based approach and update documentation accordingly.

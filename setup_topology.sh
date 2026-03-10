@@ -86,7 +86,7 @@ ip netns exec $NS_ROUTER ip link set dev veth_r_d2 up
 ip netns exec $NS_ROUTER ip link set dev lo up
 
 # Установка политики L3 (Source/Dest IP)
-ip netns exec router sysctl -w net.ipv4.fib_multipath_hash_policy=0
+ip netns exec $NS_ROUTER sysctl -w net.ipv4.fib_multipath_hash_policy=0
 
 # Enable IP forwarding on router
 ip netns exec $NS_ROUTER sysctl -w net.ipv4.ip_forward=1
@@ -94,13 +94,6 @@ ip netns exec $NS_ROUTER sysctl -w net.ipv4.ip_forward=1
 # Disable reverse path filtering to prevent ECMP packet drops
 ip netns exec $NS_ROUTER sysctl -w net.ipv4.conf.all.rp_filter=0
 ip netns exec $NS_ROUTER sysctl -w net.ipv4.conf.default.rp_filter=0
-
-# Configure ECMP hash algorithm to use Source IP only (L3S)
-# fib_multipath_hash values:
-#   0 or L3   - Layer 3 hash (source IP + destination IP)
-#   1 or L3L4 - Layer 3 + Layer 4 hash (source IP + destination IP + ports)
-#   2 or L3S  - Layer 3 source hash (source IP only) - REQUIRED BY TASK
-ip netns exec $NS_ROUTER sysctl -w net.ipv4.fib_multipath_hash=2
 
 # Configure ECMP routes on router
 echo "Configuring ECMP routes on router..."

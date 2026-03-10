@@ -114,26 +114,23 @@ This creates two equal-cost paths to the destination network, allowing the Linux
 
 ## Implementation Details
 
-### ECMP Hash Behavior in Linux
+### ECMP Hash Behavior in Linux (Source IP Validation)
 
-The Linux kernel uses a hash-based algorithm to select among multiple equal-cost paths. The hash is computed based on:
+In this specific test scenario, the Linux kernel is validated for **Layer 3 Source IP Hashing**. The routing decision is governed by the `fib_multipath_hash_policy` sysctl parameter.
 
-1. **Source IP address** (primary factor for this test)
-2. **Destination IP address**
-3. **Transport layer ports** (if available)
-4. **Protocol type**
+To satisfy the test requirements (Hash based on Source IP), the hash computation focuses on:
+1. **Source IP address** (The deterministic factor for path selection in this methodology).
+2. **Destination IP address** (Fixed in this topology to 192.168.4.10).
 
-The hash result is used to select one of the available paths, ensuring that packets from the same flow (same source IP) consistently use the same path.
-
-**Note:** ICMP packets (ping) do not have transport layer ports, so the hash is computed based on source IP, destination IP, and protocol type only. TCP packets include source and destination ports in the hash calculation, providing more granular flow identification.
+**Note on Protocol Consistency:** 
+To strictly validate Source IP hashing, the system must ensure that both **ICMP** (no ports) and **TCP** (with ports) from the same Source IP result in the same path selection. This proves that transport layer headers (L4) are ignored in favor of the L3 Source IP address.
 
 ### Verification Method
 
-The test verifies ECMP correctness by:
-
-1. **Consistency:** Each source IP should consistently use the same path
-2. **Distribution:** Different source IPs should be distributed across different paths
-3. **No Splitting:** A single source IP should not appear in both paths
+The methodology confirms the "Source IP Sticky" behavior through:
+1. **Flow Consistency (L3):** All traffic types (ICMP/TCP) from a single Source IP must stay on the same path.
+2. **Protocol Alignment:** Verification that changing the protocol (Ping vs Curl) does not trigger a path change for the same Source IP.
+3. **Entropy Validation:** Different Source IPs must be distributed across Path 1 and Path 2 to prove the hash-algorithm's efficiency.
 
 ## Usage
 

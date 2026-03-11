@@ -19,11 +19,15 @@ cleanup() {
     ip netns delete $NS_ROUTER 2>/dev/null || true
     ip netns delete $NS_DEST 2>/dev/null || true
     
+    ip netns exec $NS_ROUTER ip route del 192.168.4.0/24 2>/dev/null || true
+
     # Delete veth pairs
     ip link delete veth_s1_r 2>/dev/null || true
     ip link delete veth_s2_r 2>/dev/null || true
     ip link delete veth_r_d1 2>/dev/null || true
     ip link delete veth_r_d2 2>/dev/null || true
+
+    sleep 2
 }
 
 # Cleanup existing setup
@@ -85,22 +89,6 @@ ip netns exec $NS_ROUTER ip link set dev veth_r_d2 up
 
 ip netns exec $NS_ROUTER ip link set dev lo up
 
-# Установка политики L3 (Source/Dest IP)
-ip netns exec $NS_ROUTER sysctl -w net.ipv4.fib_multipath_hash_policy=0
-
-# Enable IP forwarding on router
-ip netns exec $NS_ROUTER sysctl -w net.ipv4.ip_forward=1
-
-# Disable reverse path filtering to prevent ECMP packet drops
-ip netns exec $NS_ROUTER sysctl -w net.ipv4.conf.all.rp_filter=0
-ip netns exec $NS_ROUTER sysctl -w net.ipv4.conf.default.rp_filter=0
-
-# Configure ECMP routes on router
-echo "Configuring ECMP routes on router..."
-ip netns exec $NS_ROUTER ip route add 192.168.4.0/24 \
-    nexthop via 192.168.2.2 dev veth_r_d1 weight 1 \
-    nexthop via 192.168.3.2 dev veth_r_d2 weight 1
-
 # Configure Dest
 ip netns exec $NS_DEST ip addr add 192.168.2.2/24 dev veth_d1_r
 ip netns exec $NS_DEST ip link set dev veth_d1_r up
@@ -112,11 +100,39 @@ ip netns exec $NS_DEST ip link set dev veth_d2_r up
 ip netns exec $NS_DEST ip addr add 192.168.4.10/32 dev lo
 ip netns exec $NS_DEST ip link set dev lo up
 
+sleep 1
+
+# Установка политики L3 (Source/Dest IP)
+ip netns exec $NS_ROUTER sysctl -w net.ipv4.fib_multipath_hash_policy=0
+
+# Enable IP forwarding on router
+ip netns exec $NS_ROUTER sysctl -w net.ipv4.ip_forward=1
+
+# Disable reverse path filtering to prevent ECMP packet drops
+ip netns exec $NS_ROUTER sysctl -w net.ipv4.conf.all.rp_filter=0
+ip netns exec $NS_ROUTER sysctl -w net.ipv4.conf.default.rp_filter=0
+
+echo "--- DEBUG: Interfaces in router ---"
+ip netns exec $NS_ROUTER ip addr show
+echo "--- DEBUG: Routes in router ---"
+ip netns exec $NS_ROUTER ip route show
+
+# Configure ECMP routes on router
+echo "Configuring ECMP routes on router..."
+ip netns exec $NS_ROUTER ip route replace 192.168.4.0/24 \
+    nexthop via 192.168.2.2 dev veth_r_d1 weight 1 \
+    nexthop via 192.168.3.2 dev veth_r_d2 weight 1
+
 # Add routes back to source networks
-ip netns exec $NS_DEST ip route add 192.168.1.0/24 via 192.168.2.1 dev veth_d1_r
-ip netns exec $NS_DEST ip route add 192.168.10.0/24 via 192.168.2.1 dev veth_d1_r
-ip netns exec $NS_DEST ip route add 192.168.1.0/24 via 192.168.3.1 dev veth_d2_r
-ip netns exec $NS_DEST ip route add 192.168.10.0/24 via 192.168.3.1 dev veth_d2_r
+# Объединяем два пути в один ECMP маршрут для сети Source1
+ip netns exec $NS_DEST ip route replace 192.168.1.0/24 \
+    nexthop via 192.168.2.1 dev veth_d1_r weight 1 \
+    nexthop via 192.168.3.1 dev veth_d2_r weight 1
+
+# Объединяем два пути в один ECMP маршрут для сети Source2
+ip netns exec $NS_DEST ip route replace 192.168.10.0/24 \
+    nexthop via 192.168.2.1 dev veth_d1_r weight 1 \
+    nexthop via 192.168.3.1 dev veth_d2_r weight 1
 
 echo ""
 echo "Topology setup complete!"

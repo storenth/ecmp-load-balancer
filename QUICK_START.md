@@ -10,7 +10,7 @@ uname -r
 
 # Install required tools (Ubuntu/Debian)
 sudo apt-get update
-sudo apt-get install -y iproute2 tcpdump tshark iputils-ping bc
+sudo apt-get install -y iproute2 tcpdump tshark iputils-ping bc python3
 ```
 
 ## Quick Start (5 Minutes)

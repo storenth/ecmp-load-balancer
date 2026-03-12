@@ -138,7 +138,7 @@ The methodology confirms the "Source IP Sticky" behavior through:
 
 - Linux operating system with kernel 3.0+ (for network namespace support)
 - Root/sudo privileges
-- Required tools: `ip`, `tcpdump`, `tshark`, `ping`, `bc`, `make`
+- Required tools: `python3`, `ip`, `tcpdump`, `tshark`, `ping`, `bc`, `make`
 
 ### Quick Start with Makefile
 

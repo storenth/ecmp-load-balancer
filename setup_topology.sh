@@ -69,7 +69,7 @@ ip netns exec $NS_SOURCE1 ip link set dev lo up
 ip netns exec $NS_SOURCE1 ip route add default via 192.168.1.1
 
 # Configure Source2
-ip netns exec $NS_SOURCE2 ip addr add 192.168.10.10/24 dev veth_s2_r
+ip netns exec $NS_SOURCE2 ip addr add 192.168.10.12/24 dev veth_s2_r
 ip netns exec $NS_SOURCE2 ip link set dev veth_s2_r up
 ip netns exec $NS_SOURCE2 ip link set dev lo up
 ip netns exec $NS_SOURCE2 ip route add default via 192.168.10.1
@@ -139,7 +139,7 @@ echo "Topology setup complete!"
 echo ""
 echo "Network topology:"
 echo "  Source1 (192.168.1.10) --> Router (192.168.1.1)"
-echo "  Source2 (192.168.10.10) --> Router (192.168.10.1)"
+echo "  Source2 (192.168.10.12) --> Router (192.168.10.1)"
 echo "  Router --> Dest via two ECMP paths:"
 echo "    Path 1: 192.168.2.1 --> 192.168.2.2"
 echo "    Path 2: 192.168.3.1 --> 192.168.3.2"

@@ -59,7 +59,7 @@ verify: setup ## Setup topology and verify connectivity
 	@echo "Testing from Source1 (192.168.1.10):"
 	@sudo ip netns exec source1 ping -c 3 192.168.4.10
 	@echo ""
-	@echo "Testing from Source2 (192.168.10.10):"
+	@echo "Testing from Source2 (192.168.10.12):"
 	@sudo ip netns exec source2 ping -c 3 192.168.4.10
 	@echo ""
 	@echo "$(GREEN)✓ Connectivity verification complete$(NC)"

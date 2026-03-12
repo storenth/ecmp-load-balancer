@@ -44,7 +44,7 @@ Topology setup complete!
 
   Network topology:
   Source1 (192.168.1.10) --> Router (192.168.1.1)
-  Source2 (192.168.10.10) --> Router (192.168.10.1)
+  Source2 (192.168.10.12) --> Router (192.168.10.1)
   Router --> Dest via two ECMP paths:
     Path 1: 192.168.2.1 --> 192.168.2.2
     Path 2: 192.168.3.1 --> 192.168.3.2
@@ -110,8 +110,8 @@ Protocols detected for this IP:
     100 ICMP
     10 TCP
 
---- Validating L3 Consistency for 192.168.10.10 ---
-✅ Source 192.168.10.10 is STICKY to path2_capture.pcap
+--- Validating L3 Consistency for 192.168.10.12 ---
+✅ Source 192.168.10.12 is STICKY to path2_capture.pcap
 Protocols detected for this IP:
     100 ICMP
     10 TCP

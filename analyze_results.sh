@@ -7,7 +7,7 @@ set -e
 
 RESULTS_DIR="results"
 S1="192.168.1.10"
-S2="192.168.10.10"
+S2="192.168.10.12"
 
 echo "======================================================"
 echo "📊 ECMP ADVANCED TRAFFIC ANALYSIS"

@@ -38,4 +38,4 @@ echo "Traffic capture complete! Files saved in $RESULTS_DIR/"
 
 # 4. Обновленные подсказки для анализа
 echo "To analyze the captures (including TCP):"
-echo "  tshark -r $RESULTS_DIR/path1_capture.pcap -Y 'ip.src == 192.168.1.10 or ip.src == 192.168.10.10' -T fields -e ip.src -e _ws.col.Protocol"
+echo "  tshark -r $RESULTS_DIR/path1_capture.pcap -Y 'ip.src == 192.168.1.10 or ip.src == 192.168.10.12' -T fields -e ip.src -e _ws.col.Protocol"

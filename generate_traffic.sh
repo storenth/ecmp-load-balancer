@@ -48,7 +48,7 @@ generate_from_source() {
 
 # 2. ГЕНЕРАЦИЯ ТРАФИКА
 generate_from_source "source1" "192.168.1.10" "results/source1_report.log"
-generate_from_source "source2" "192.168.10.10" "results/source2_report.log"
+generate_from_source "source2" "192.168.10.12" "results/source2_report.log"
 
 # 3. ОЧИСТКА (После генерации)
 echo "Cleaning up server..."

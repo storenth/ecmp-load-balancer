@@ -10,14 +10,14 @@ This project implements a minimal static topology for testing ECMP (Equal-Cost M
 
 ```
 Source1 (192.168.1.10) ──┐
-                         ├── Router (192.168.1.1/192.168.10.1) ──┬── Path 1 (192.168.2.0/24) ──┐
-Source2 (192.168.10.10) ─┘                                       └── Path 2 (192.168.3.0/24) ──┼── Dest (192.168.4.10)
+                          ├── Router (192.168.1.1/192.168.10.1) ──┬── Path 1 (192.168.2.0/24) ──┐
+Source2 (192.168.10.12) ─┘                                       └── Path 2 (192.168.3.0/24) ──┼── Dest (192.168.4.10)
 ```
 
 ### Components
 
 1. **Source1** (namespace: `source1`): 192.168.1.10/24 on veth_s1_r
-2. **Source2** (namespace: `source2`): 192.168.10.10/24 on veth_s2_r
+2. **Source2** (namespace: `source2`): 192.168.10.12/24 on veth_s2_r
 3. **Router** (namespace: `router`):
    - 192.168.1.1/24 on veth_r_s1
    - 192.168.10.1/24 on veth_r_s2
@@ -252,7 +252,7 @@ Removes all namespaces and veth pairs.
 When ECMP hash is working correctly:
 
 1. **Source 192.168.1.10** should appear in only one path (either Path 1 or Path 2)
-2. **Source 192.168.10.10** should appear in only one path (either Path 1 or Path 2)
+2. **Source 192.168.10.12** should appear in only one path (either Path 1 or Path 2)
 3. **Different sources** should be distributed across different paths (ideally one per path)
 4. **Both ICMP and TCP** from the same source IP should use the same path (L3 consistency)
 
